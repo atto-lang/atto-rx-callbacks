@@ -2,8 +2,8 @@
 
 Standalone callback-only reactive library for Oreslang.
 
-This variant deliberately uses synchronous callbacks rather than channels or
-Future/await. It stays separate from `rx-ores` and `rx-oreslang-channels` so
+This variant deliberately uses synchronous callbacks rather than channels,
+Future/await, or a pull subscription. It stays separate from `rx-ores` and `rx-oreslang-channels` so
 the execution models can be tested and benchmarked independently.
 
 ## Source model
@@ -27,21 +27,10 @@ Operators are callback composition: `map`, `filter`, `take`, and
 `for_each`. The map callback receives a borrow (`Fnc<&A, B>`) so the push
 pipeline does not imply ownership transfer merely to inspect an element.
 
-The synchronous Observable path remains callback-only, but asynchronous callback
-composition is now available through the native Ores `Future<T>` surface:
-
-```ores
-val Future<int> mapped = rx_callbacks.future_map(source, transform);
-val Future<string> chained = rx_callbacks.future_compose(mapped, next_async);
-val Future<string> observed = rx_callbacks.future_on_success(chained, observer);
-```
-
-`future_map`, `future_compose` / `future_flat_map`, and
-`future_on_success` delegate to Oreslang's native Future combinators. Guest
-callbacks execute as Ores scheduler/actor turns; producer completion threads only
-settle Futures and never execute the guest callback inline. This keeps the
-callback variant compatible with asynchronous sources without introducing a
-Java `CompletableFuture` callback surface or a Channel-backed data path.
+This variant intentionally stops at the callback boundary: no `Future<T>`,
+`await`, Channel-backed transport, or pull subscription is part of `src/rx.ores`.
+Async/Future composition belongs in the separate pull/Future `rx-ores` variant
+while we measure the callback data path independently.
 
 ## Validation and benchmark
 
