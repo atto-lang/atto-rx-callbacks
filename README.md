@@ -24,8 +24,12 @@ callback variant's backpressure/cancellation signal, so this implementation
 does not need a channel, Future, scheduler hop, or pull Subscription.
 
 Operators are callback composition: `map`, `filter`, `take`, and
-`for_each`. The map callback receives a borrow (`Fnc<&A, B>`) so the push
-pipeline does not imply ownership transfer merely to inspect an element.
+`for_each`. Oreslang does not encode borrowing with pointer-like type syntax:
+callbacks use ordinary types such as `Fnc<A, B>` and `Fnc<T, bool>`.
+The library makes read-only ownership explicit at callback invocation boundaries
+with `rt borrow value`. Copying and shared ownership remain explicit through
+`rt copy` and `rt share`; there is no `&T`, `&value`, or `T*`
+surface in this library.
 
 This variant intentionally stops at the callback boundary: no `Future<T>`,
 `await`, Channel-backed transport, or pull subscription is part of `src/rx.ores`.
