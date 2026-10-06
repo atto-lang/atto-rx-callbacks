@@ -49,3 +49,11 @@ python3 scripts/test.py
 
 `bench/pipeline.ores` implements the same repeated logical pipeline used by
 the central harness in `rx-ores/bench/benchmark.py`.
+
+
+## Compiler compatibility
+
+This pointerless callback surface requires the current-main ownership convergence
+that makes first-class `Fnc<T,...>` calls temporarily read-borrow non-Copy
+arguments and provides compiler-owned `rt borrow/take/copy/share`. The pinned
+compiler revision is the exact head validated by the funded exact-tree carrier.
