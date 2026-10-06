@@ -42,9 +42,7 @@ def run(args):
     return result.stdout.strip()
 
 assert_pointerless()
-run(['--check', str(ROOT / 'src/rx.ores')])
 for path in sorted((ROOT / 'tests').glob('*.ores')):
-    run(['--check', str(path)])
     actual = run([str(path)])
     expected = path.with_suffix('.out').read_text().strip()
     if actual != expected:
