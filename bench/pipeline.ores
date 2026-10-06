@@ -6,12 +6,12 @@ pub fnc main(): void {
 
   for let iteration = 0; iteration < 20000; iteration++ do
     val Observable<int> source = rx_callbacks.from_values([1, 2, 3, 4, 5, 6, 7, 8]);
-    val Fnc<&int, int> twice = |value| -> {
+    val Fnc<int, int> twice = |value| -> {
       val int item = value as int;
       return item * 2;
     };
     val Observable<int> doubled = rx_callbacks.map(source, twice);
-    val Fnc<&int, bool> above_four = |value| -> {
+    val Fnc<int, bool> above_four = |value| -> {
       val int item = value as int;
       return item > 4;
     };
@@ -19,7 +19,7 @@ pub fnc main(): void {
     val Observable<int> limited = rx_callbacks.take(selected, 3);
 
     let int local = 0;
-    val Fnc<&int, bool> sink = |value| -> {
+    val Fnc<int, bool> sink = |value| -> {
       val int item = value as int;
       local = local + item;
       return true;
