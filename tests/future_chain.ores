@@ -9,8 +9,6 @@ async fnc twice(int value): int {
 }
 
 pub fnc main(): void {
-  let int observed = 0;
-
   val Fnc<int, int> plus_one = |int value| -> {
     return value + 1;
   };
@@ -24,15 +22,15 @@ pub fnc main(): void {
       rx_callbacks.future_compose(mapped, next);
 
   val Fnc<int, void> observe = |int value| -> {
-    observed = value;
+    stdio.stdout.write("seen:");
+    stdio.stdout.write(value);
+    stdio.stdout.write(":");
     return;
   };
   val Future<int> observed_future =
       rx_callbacks.future_on_success(composed, observe);
 
   stdio.stdout.write(await observed_future);
-  stdio.stdout.write(":");
-  stdio.stdout.write(observed);
 
   val Future<int> flat =
       rx_callbacks.future_flat_map(twenty(), next);
