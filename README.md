@@ -27,10 +27,21 @@ Operators are callback composition: `map`, `filter`, `take`, and
 `for_each`. The map callback receives a borrow (`Fnc<&A, B>`) so the push
 pipeline does not imply ownership transfer merely to inspect an element.
 
-This variant intentionally does **not** adapt asynchronous producers yet. Doing
-so by invoking guest callbacks from an arbitrary completion thread would violate
-the scheduler-domain contract. Async callback delivery should only be added once
-it has an explicit Ores scheduler/actor continuation boundary.
+The synchronous Observable path remains callback-only, but asynchronous callback
+composition is now available through the native Ores `Future<T>` surface:
+
+```ores
+val Future<int> mapped = rx_callbacks.future_map(source, transform);
+val Future<string> chained = rx_callbacks.future_compose(mapped, next_async);
+val Future<string> observed = rx_callbacks.future_on_success(chained, observer);
+```
+
+`future_map`, `future_compose` / `future_flat_map`, and
+`future_on_success` delegate to Oreslang's native Future combinators. Guest
+callbacks execute as Ores scheduler/actor turns; producer completion threads only
+settle Futures and never execute the guest callback inline. This keeps the
+callback variant compatible with asynchronous sources without introducing a
+Java `CompletableFuture` callback surface or a Channel-backed data path.
 
 ## Validation and benchmark
 
