@@ -1,6 +1,6 @@
 # Callback RX ownership and binding contract
 
-**Acceptance contract, not a statement of support in the current compiler pin.** This document may land independently of the compiler implementation. Every case below requires compiler-backed evidence before a pin or API is promoted.
+**Executable coverage at the pinned compiler:** `tests/operators.ores`, `tests/owned_capture.ores`, and `tests/reject/readonly_capture.ores` cover operator composition, owned mutable capture, and rejection of nested inferred-struct mutation. The remaining cases below remain acceptance requirements, not blanket claims of support.
 
 Follow [compiler PR #411](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/411). Four independent modes:
 

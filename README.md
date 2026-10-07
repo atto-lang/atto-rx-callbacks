@@ -60,4 +60,6 @@ compiler revision is the exact head validated by the funded exact-tree carrier.
 
 ## Compiler compatibility checkpoint (2026-10-06)
 
-This repository tracks the latest 10 compiler PRs as **unmerged proposals**, without changing its stable compiler pin or API behavior. See [docs/compiler-pr-sync.md](docs/compiler-pr-sync.md) for rx-ores-callbacks-specific migration invariants, dependencies and validation gates.
+The compiler convergence and actor proofs are merged. `compiler.lock` and `compiler-tree.txt` pin the validated implementation. `Observable` is explicitly public for named imports; implementation classes stay private. Tests execute operator composition and owned mutable captures, and require rejection of nested readonly capture mutation.
+
+CI checks out a source-only `compiler-mirror/<revision>` branch in this private repository. Setup verifies its tree identity and clean source state before building; no cross-repository token is required. The historical proposal inventory remains in [docs/compiler-pr-sync.md](docs/compiler-pr-sync.md).
