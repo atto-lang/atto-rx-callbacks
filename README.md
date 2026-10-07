@@ -57,3 +57,7 @@ This pointerless callback surface requires the current-main ownership convergenc
 that makes first-class `Fnc<T,...>` calls temporarily read-borrow non-Copy
 arguments and provides compiler-owned `rt borrow/take/copy/share`. The pinned
 compiler revision is the exact head validated by the funded exact-tree carrier.
+
+## Compiler compatibility checkpoint (2026-10-06)
+
+This repository tracks the latest 10 compiler PRs as **unmerged proposals**, without changing its stable compiler pin or API behavior. See [docs/compiler-pr-sync.md](docs/compiler-pr-sync.md) for rx-ores-callbacks-specific migration invariants, dependencies and validation gates.
