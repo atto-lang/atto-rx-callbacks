@@ -48,3 +48,12 @@ for path in sorted((ROOT / 'tests').glob('*.ores')):
     if actual != expected:
         sys.exit(f'{path.name}: expected {expected!r}, got {actual!r}')
     print(f'PASS {path.stem}')
+
+for path in sorted((ROOT / 'tests' / 'reject').glob('*.ores')):
+    result = subprocess.run(COMMAND + ['--check', str(path)], text=True,
+                            capture_output=True, timeout=30)
+    expected = path.with_suffix('.err').read_text().strip()
+    diagnostic = result.stdout + result.stderr
+    if result.returncode == 0 or expected not in diagnostic:
+        sys.exit(f'{path.name}: expected rejection containing {expected!r}\n{diagnostic}')
+    print(f'PASS reject/{path.stem}')

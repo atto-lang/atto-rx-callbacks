@@ -12,7 +12,7 @@
 // under the ownership checker; an explicit longer-lived read view is spelled
 // `rt borrow value`. Copy/share transitions use `rt copy` / `rt share`.
 
-define class Observable<T> as
+pub define class Observable<T> as
   // Return the number of source values consumed before completion/early stop.
   // The count gives tests/benchmarks a deterministic observable result without
   // adding I/O to the hot loop.
