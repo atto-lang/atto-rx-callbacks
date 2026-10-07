@@ -18,15 +18,15 @@ pub fnc main(): void {
     val Observable<int> selected = rx_callbacks.filter(doubled, above_four);
     val Observable<int> limited = rx_callbacks.take(selected, 3);
 
-    let int local = 0;
     val Fnc<int, bool> sink = |value| -> {
       val int item = value as int;
-      local = local + item;
-      return true;
+      return item == 6 || item == 8 || item == 10;
     };
 
-    rx_callbacks.for_each(limited, sink);
-    checksum = checksum + local;
+    // The callback-only API returns the number of consumed values.
+    // Do not capture and mutate a loop-local that the closure owns.
+    val int consumed = rx_callbacks.for_each(limited, sink);
+    checksum = checksum + consumed * 8;
   done
 
   stdio.println(checksum);
