@@ -1,63 +1,32 @@
-# rx-ores-callbacks
+# Oreslang
 
-Standalone callback-only reactive library for Oreslang.
+Oreslang is a statically typed GraalVM/Truffle language with nominal typing by default, explicit structural-call opt-ins, actor-oriented concurrency, hot-loadable code generations, and deny-by-default isolate capabilities.
 
-This variant deliberately uses synchronous callbacks rather than channels,
-Future/await, or a pull subscription. It stays separate from `rx-ores` and `rx-oreslang-channels` so
-the execution models can be tested and benchmarked independently.
+This repository contains the Java/Truffle reference implementation.
 
-## Source model
+The language is intentionally opinionated:
 
-`src/rx.ores` is a file/code unit, not an implicit module. Namespace it at the
-import site:
+- static nominal typing by default, with explicit structural compatibility at selected call boundaries;
+- private functions by default (`fnc`), with `pub` for exported functions;
+- class methods omit `fnc` and have an implicit `self` receiver;
+- class construction uses a single explicit `constructor(...)` declaration (never a Java-style class-name constructor); top-level classes/constructors are file-private, while module classes/constructors are private by default and may be `pub`;
+- classes cannot nest inside classes; class bodies contain fields, an optional constructor, methods, and `static fnc` members only;
+- one return value only (tuples/arrays/records are ordinary single values);
+- `val`, `const`, and `let` are the only variable declarations;
+- actor heaps are isolated: mutable values are never shared between actors;
+- immutable/sendable values may be message-passed, and explicitly frozen regions may be shared read-only;
+- isolates are stricter security boundaries for FaaS/mobile workloads, with host access denied and Oreslang APIs capability-gated by default;
+- JIT, AOT/interpreter, and AOT-host + guest-JIT hybrid execution profiles;
+- file-granular incremental compilation with stable code-unit/package identities and reverse-dependency invalidation;
+- flat optional file namespaces and flat modules (neither may nest);
+- class-level `static fnc` functions separated from receiver methods;
+- first-class function aliases/types and block-only `|args| -> { ... }` lambdas;
+- lexical closures with persistent captured environments;
+- affine ownership, move checking, borrows, immutable-by-default parameters, and `Type mut name` owned-mutation syntax - see [ft borrow, ft copy, ft take, ft share]
+- hot reload creates a fresh versioned guest context/generation without requiring FFI or dynamic native libraries;
+- direct method calls reuse shared class method definitions; instance/actor methods are direct-call-only, and callbacks use explicit lambdas instead of implicit bound-method values;
+- multiple named modules may appear in one source file;
+- explicit `return` statements;
+- generics, tuples, arrays, complex numbers, futures/`await`, lambdas, `defer`, and `try/catch/finally` are language-level features.
 
-```ores
-import * as rx_callbacks from './src/rx.ores';
-import class Observable from './src/rx.ores';
-```
-
-## Callback contract
-
-`subscribe(on_next)` pushes values synchronously. `on_next` returns `true`
-to continue and `false` to stop upstream immediately. That boolean is the
-callback variant's backpressure/cancellation signal, so this implementation
-does not need a channel, Future, scheduler hop, or pull Subscription.
-
-Operators are callback composition: `map`, `filter`, `take`, and
-`for_each`. Oreslang does not encode borrowing with pointer-like function
-types: callbacks use ordinary types such as `Fnc<A, B>` and
-`Fnc<T, bool>`. Calling such a callback gives it temporary read access under
-the ownership checker without changing the source type. If code needs a named
-borrow that lives beyond one call expression, it uses `rt borrow value`.
-Independent copying and read-only shared ownership use `rt copy` and
-`rt share`.
-
-This variant intentionally stops at the callback boundary: no `Future<T>`,
-`await`, Channel-backed transport, or pull subscription is part of `src/rx.ores`.
-Async/Future composition belongs in the separate pull/Future `rx-ores` variant
-while we measure the callback data path independently.
-
-## Validation and benchmark
-
-Run the pinned compiler tests with:
-
-```sh
-python3 scripts/setup.py
-source .work/env.sh
-python3 scripts/test.py
-```
-
-`bench/pipeline.ores` implements the same repeated logical pipeline used by
-the central harness in `rx-ores/bench/benchmark.py`.
-
-
-## Compiler compatibility
-
-This pointerless callback surface requires the current-main ownership convergence
-that makes first-class `Fnc<T,...>` calls temporarily read-borrow non-Copy
-arguments and provides compiler-owned `rt borrow/take/copy/share`. The pinned
-compiler revision is the exact head validated by the funded exact-tree carrier.
-
-## Compiler compatibility checkpoint (2026-10-06)
-
-This repository tracks the latest 10 compiler PRs as **unmerged proposals**, without changing its stable compiler pin or API behavior. See [docs/compiler-pr-sync.md](docs/compiler-pr-sync.md) for rx-ores-callbacks-specific migration invariants, dependencies and validation gates.
+The first implementation is developed on a feature branch and will land with an executable Truffle skeleton, grammar/specification, examples, tests, and CI.
