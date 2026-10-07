@@ -24,7 +24,7 @@ end
 define class ValuesObservable<T> extends Observable<T> as
   val Array<T> values;
 
-  pub constructor(Array<T> values) {
+  constructor(Array<T> values) {
     self.values = values;
   }
 
@@ -48,7 +48,7 @@ define class MapObservable<A, B> extends Observable<B> as
   val Observable<A> source;
   val Fnc<A, B> transform;
 
-  pub constructor(Observable<A> source, Fnc<A, B> transform) {
+  constructor(Observable<A> source, Fnc<A, B> transform) {
     self.source = source;
     self.transform = transform;
   }
@@ -67,7 +67,7 @@ define class FilterObservable<T> extends Observable<T> as
   val Observable<T> source;
   val Fnc<T, bool> predicate;
 
-  pub constructor(Observable<T> source, Fnc<T, bool> predicate) {
+  constructor(Observable<T> source, Fnc<T, bool> predicate) {
     self.source = source;
     self.predicate = predicate;
   }
@@ -88,7 +88,7 @@ define class TakeObservable<T> extends Observable<T> as
   val Observable<T> source;
   val int count;
 
-  pub constructor(Observable<T> source, int count) {
+  constructor(Observable<T> source, int count) {
     if count < 0; then
       val Result<bool, String> failure = Err("take count must be nonnegative");
       failure.expect("rx_callbacks.take");
