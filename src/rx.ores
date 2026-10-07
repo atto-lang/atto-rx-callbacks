@@ -12,7 +12,7 @@
 // under the ownership checker; an explicit longer-lived read view is spelled
 // `rt borrow value`. Copy/share transitions use `rt copy` / `rt share`.
 
-pub define class Observable<T> as
+define class Observable<T> as
   // Return the number of source values consumed before completion/early stop.
   // The count gives tests/benchmarks a deterministic observable result without
   // adding I/O to the hot loop.
@@ -21,7 +21,7 @@ pub define class Observable<T> as
   }
 end
 
-pub define class ValuesObservable<T> extends Observable<T> as
+define class ValuesObservable<T> extends Observable<T> as
   val Array<T> values;
 
   pub constructor(Array<T> values) {
@@ -44,7 +44,7 @@ pub fnc from_values<T>(Array<T> values): Observable<T> {
   return new ValuesObservable<T>(values);
 }
 
-pub define class MapObservable<A, B> extends Observable<B> as
+define class MapObservable<A, B> extends Observable<B> as
   val Observable<A> source;
   val Fnc<A, B> transform;
 
@@ -63,7 +63,7 @@ pub define class MapObservable<A, B> extends Observable<B> as
   }
 end
 
-pub define class FilterObservable<T> extends Observable<T> as
+define class FilterObservable<T> extends Observable<T> as
   val Observable<T> source;
   val Fnc<T, bool> predicate;
 
@@ -84,7 +84,7 @@ pub define class FilterObservable<T> extends Observable<T> as
   }
 end
 
-pub define class TakeObservable<T> extends Observable<T> as
+define class TakeObservable<T> extends Observable<T> as
   val Observable<T> source;
   val int count;
 
