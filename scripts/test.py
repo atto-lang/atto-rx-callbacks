@@ -5,6 +5,7 @@ import re
 from pathlib import Path
 import subprocess
 import sys
+from fixture_inventory import validate_cases
 
 ROOT = Path(__file__).resolve().parents[1]
 JAVA = os.environ.get('JAVA', 'java')
@@ -41,15 +42,17 @@ def run(args):
         sys.exit(result.stdout + result.stderr)
     return result.stdout.strip()
 
+TESTS = validate_cases(ROOT / 'tests', ('.out',))
+REJECTS = validate_cases(ROOT / 'tests/reject', ('.err',))
 assert_pointerless()
-for path in sorted((ROOT / 'tests').glob('*.ores')):
+for path in TESTS:
     actual = run([str(path)])
     expected = path.with_suffix('.out').read_text().strip()
     if actual != expected:
         sys.exit(f'{path.name}: expected {expected!r}, got {actual!r}')
     print(f'PASS {path.stem}')
 
-for path in sorted((ROOT / 'tests' / 'reject').glob('*.ores')):
+for path in REJECTS:
     result = subprocess.run(COMMAND + ['--check', str(path)], text=True,
                             capture_output=True, timeout=30)
     expected = path.with_suffix('.err').read_text().strip()
