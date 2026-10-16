@@ -42,10 +42,20 @@ def run(args):
         sys.exit(result.stdout + result.stderr)
     return result.stdout.strip()
 
-TESTS = validate_cases(ROOT / 'tests', ('.out',))
+TESTS = validate_cases(ROOT / 'tests', ('.out', '.err'))
 REJECTS = validate_cases(ROOT / 'tests/reject', ('.err',))
 assert_pointerless()
 for path in TESTS:
+    failure_file = path.with_suffix('.err')
+    if failure_file.is_file():
+        failed = subprocess.run(COMMAND + [str(path)], text=True,
+                                capture_output=True, timeout=30)
+        expected_error = failure_file.read_text().strip()
+        diagnostic = failed.stderr + failed.stdout
+        if failed.returncode == 0 or expected_error not in diagnostic:
+            sys.exit(f'{path.name}: expected runtime failure containing {expected_error!r}\\n{diagnostic}')
+        print(f'PASS {path.stem} (expected runtime failure)')
+        continue
     actual = run([str(path)])
     expected = path.with_suffix('.out').read_text().strip()
     if actual != expected:
