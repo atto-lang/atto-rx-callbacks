@@ -63,3 +63,7 @@ compiler revision is the exact head validated by the funded exact-tree carrier.
 The compiler convergence and actor proofs are merged. `compiler.lock` and `compiler-tree.txt` pin the validated implementation. `Observable` is explicitly public for named imports; implementation classes stay private. Tests execute operator composition and owned mutable captures, and require rejection of nested readonly capture mutation.
 
 CI checks out a source-only `compiler-mirror/<revision>` branch in this private repository. Setup verifies its tree identity and clean source state before building; no cross-repository token is required. The historical proposal inventory remains in [docs/compiler-pr-sync.md](docs/compiler-pr-sync.md).
+
+## Prototype comparison and conformance
+
+See [the cross-variant evaluation contract](docs/PROTOTYPE_EVALUATION.md). This repository is an experimental execution model, not the official Oreslang `rx` userland API. The `skip(source, count)` operator is added alongside `map`, `filter` and `take`; all performance conclusions require matching compiler revisions and measured workloads.
