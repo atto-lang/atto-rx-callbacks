@@ -25,3 +25,15 @@ This describes intended scope, not a verified feature matrix. Consult the source
 - [AttoLang](https://github.com/atto-lang)
 - [Language specification](https://github.com/atto-lang/atto-spec)
 - [Cross-platform conformance](https://github.com/atto-lang/atto-platform-conformance)
+
+## Repository ownership and contribution routing
+
+**Belongs here:** Host callback interop adapters, listener registration/unregistration and explicit callback ownership/lifetime rules.
+
+**Belongs elsewhere:** Core stream operators in atto-rx, channels in atto-rx-channels and async task composition in atto-rx-tasks.
+
+**Security and portability boundary:** Never smuggle lexical closures through serializable actor messages; make unsubscribe and late callback behavior race-safe with generation tokens.
+
+AttoLang is the public name; preserve existing Oreslang/.ores compatibility and use canonical .atto for new portable library source. This README defines scope, not feature readiness.
+
+**Acceptance:** name exact source SHA/tree, runtime/toolchain, positive and negative checks and execution receipt before claiming support. Host-only tests and empty CI steps do not prove guest execution.
