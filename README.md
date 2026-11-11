@@ -1,69 +1,27 @@
-# rx-ores-callbacks
+# atto-rx-callbacks
 
-Standalone callback-only reactive library for Oreslang.
+Callback interoperability and reactive event abstractions for AttoLang.
 
-This variant deliberately uses synchronous callbacks rather than channels,
-Future/await, or a pull subscription. It stays separate from `rx-ores` and `rx-oreslang-channels` so
-the execution models can be tested and benchmarked independently.
+## Purpose
 
-## Source model
+Callback/event bridges and explicit ownership/lifetime rules.
 
-`src/rx.ores` is a file/code unit, not an implicit module. Namespace it at the
-import site:
+## API and contract expectations
 
-```ores
-import * as rx_callbacks from './src/rx.ores';
-import class Observable from './src/rx.ores';
-```
+- Expose general-purpose interfaces that are usable without an Atto commercial account.
+- Document data/ownership semantics, error behavior, and supported runtimes.
+- Keep protocol and serialization details portable across relevant AttoLang backends.
 
-## Callback contract
+## Development and testing
 
-`subscribe(on_next)` pushes values synchronously. `on_next` returns `true`
-to continue and `false` to stop upstream immediately. That boolean is the
-callback variant's backpressure/cancellation signal, so this implementation
-does not need a channel, Future, scheduler hop, or pull Subscription.
+Use checked-in implementation and CI for actual commands. Add behavior-focused tests, including negative cases and lifecycle edge cases; distinguish local unit tests from executed multi-backend conformance.
 
-Operators are callback composition: `map`, `filter`, `take`, and
-`for_each`. Oreslang does not encode borrowing with pointer-like function
-types: callbacks use ordinary types such as `Fnc<A, B>` and
-`Fnc<T, bool>`. Calling such a callback gives it temporary read access under
-the ownership checker without changing the source type. If code needs a named
-borrow that lives beyond one call expression, it uses `rt borrow value`.
-Independent copying and read-only shared ownership use `rt copy` and
-`rt share`.
+## Project status
 
-This variant intentionally stops at the callback boundary: no `Future<T>`,
-`await`, Channel-backed transport, or pull subscription is part of `src/rx.ores`.
-Async/Future composition belongs in the separate pull/Future `rx-ores` variant
-while we measure the callback data path independently.
+This describes intended scope, not a verified feature matrix. Consult the source tree and exact-commit CI results for implementation status.
 
-## Validation and benchmark
+## Ecosystem
 
-Run the pinned compiler tests with:
-
-```sh
-python3 scripts/setup.py
-source .work/env.sh
-python3 scripts/test.py
-```
-
-`bench/pipeline.ores` implements the same repeated logical pipeline used by
-the central harness in `rx-ores/bench/benchmark.py`.
-
-
-## Compiler compatibility
-
-This pointerless callback surface requires the current-main ownership convergence
-that makes first-class `Fnc<T,...>` calls temporarily read-borrow non-Copy
-arguments and provides compiler-owned `rt borrow/take/copy/share`. The pinned
-compiler revision is the exact head validated by the funded exact-tree carrier.
-
-## Compiler compatibility checkpoint (2026-10-06)
-
-The compiler convergence and actor proofs are merged. `compiler.lock` and `compiler-tree.txt` pin the validated implementation. `Observable` is explicitly public for named imports; implementation classes stay private. Tests execute operator composition and owned mutable captures, and require rejection of nested readonly capture mutation.
-
-CI checks out a source-only `compiler-mirror/<revision>` branch in this private repository. Setup verifies its tree identity and clean source state before building; no cross-repository token is required. The historical proposal inventory remains in [docs/compiler-pr-sync.md](docs/compiler-pr-sync.md).
-
-## Prototype comparison and conformance
-
-See [the cross-variant evaluation contract](docs/PROTOTYPE_EVALUATION.md). This repository is an experimental execution model, not the official Oreslang `rx` userland API. The `skip(source, count)` operator is added alongside `map`, `filter` and `take`; all performance conclusions require matching compiler revisions and measured workloads.
+- [AttoLang](https://github.com/atto-lang)
+- [Language specification](https://github.com/atto-lang/atto-spec)
+- [Cross-platform conformance](https://github.com/atto-lang/atto-platform-conformance)
