@@ -48,7 +48,7 @@ def main():
         raise SystemExit('Classpath omits selected compiler target/classes')
     java = os.environ.get('JAVA', 'java')
     command = [java, '--enable-native-access=ALL-UNNAMED',
-               '-Dpolyglot.engine.Compilation=false', '-Dpolyglot.engine.WarnInterpreterOnly=false',
+               '-Dpolyglot.engine.WarnInterpreterOnly=false',
                '-cp', classpath, 'dev.oreslang.launcher.OresMain']
     report = {'compiler': compiler_identity, 'sources': [identity(x) for x in sources],
               'platform': platform.platform(), 'java': subprocess.run([java, '-version'], capture_output=True, text=True).stderr,

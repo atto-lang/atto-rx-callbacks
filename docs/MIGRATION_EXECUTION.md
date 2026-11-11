@@ -83,7 +83,7 @@ and report wall time and peak process RSS (bytes on macOS; normalized from KiB
 on Linux). Logs preserve commands, Java version, stderr, warmups and all samples.
 
 Measurements include JVM startup, parsing/checking and execution. The local
-GraalVM 25 update does not match Truffle 25.3.4.1; runs explicitly disable JIT.
+GraalVM 25 update does not match Truffle 25.3.4.1; the runtime falls back to its interpreter (no version checks are disabled).
 These are repeatable interpreter process measurements, not optimized steady-state
 throughput, per-operator allocation counts or a cross-backend performance claim.
 The historical three-model driver is not this two-model benchmark; channels/tasks
