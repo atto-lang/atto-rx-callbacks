@@ -132,3 +132,35 @@ pub fnc take<T>(Observable<T> source, int count): Observable<T> {
 pub fnc for_each<T>(Observable<T> source, Fnc<T, bool> on_next): int {
   return source.subscribe(on_next);
 }
+
+
+// Skip is callback composition: dropped items do not reach the downstream sink.
+define class SkipObservable<T> extends Observable<T> as
+  val Observable<T> source;
+  val int count;
+
+  constructor(Observable<T> source, int count) {
+    if count < 0; then
+      val Result<bool, String> failure = Err("skip count must be nonnegative");
+      failure.expect("rx_callbacks.skip");
+    fi
+    self.source = source;
+    self.count = count;
+  }
+
+  pub subscribe(Fnc<T, bool> on_next): int {
+    let int remaining = self.count;
+    val Fnc<T, bool> forward = |value| -> {
+      if remaining > 0; then
+        remaining = remaining - 1;
+        return true;
+      fi
+      return on_next(value);
+    };
+    return self.source.subscribe(forward);
+  }
+end
+
+pub fnc skip<T>(Observable<T> source, int count): Observable<T> {
+  return new SkipObservable<T>(source, count);
+}
