@@ -37,3 +37,15 @@ This describes intended scope, not a verified feature matrix. Consult the source
 AttoLang is the public name; preserve existing Oreslang/.ores compatibility and use canonical .atto for new portable library source. This README defines scope, not feature readiness.
 
 **Acceptance:** name exact source SHA/tree, runtime/toolchain, positive and negative checks and execution receipt before claiming support. Host-only tests and empty CI steps do not prove guest execution.
+
+
+## Executable Java milestone
+
+This migration branch contains the real guest stream implementation and tests.
+`src/rx.atto` is canonical, with a verified byte-identical `.ores` compatibility
+entry. The supported profile is synchronous pull or synchronous callbacks,
+respectively; Future/actor/backend parity is not implied.
+
+See [migration, commands and known blockers](docs/MIGRATION_EXECUTION.md).
+The incremental CLI applies map/filter/skip/take to stdin and emits `beta!` then
+`gamma!` for the documented input. It terminates without waiting for EOF.

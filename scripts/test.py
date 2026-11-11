@@ -54,13 +54,12 @@ def run(args):
         sys.exit(result.stdout + result.stderr)
     return result.stdout.strip()
 
+TESTS = validate_cases(ROOT / 'tests', ('.out', '.err'))
+REJECTS = validate_cases(ROOT / 'tests/reject', ('.err',))
 assert_pointerless()
 if (ROOT / 'src/rx.atto').read_bytes() != (ROOT / 'src/rx.ores').read_bytes():
     sys.exit('src/rx.ores must be the byte-identical compatibility copy of src/rx.atto')
 
-TESTS = validate_cases(ROOT / 'tests', ('.out', '.err'))
-REJECTS = validate_cases(ROOT / 'tests/reject', ('.err',))
-assert_pointerless()
 for path in TESTS:
     failure_file = path.with_suffix('.err')
     if failure_file.is_file():
