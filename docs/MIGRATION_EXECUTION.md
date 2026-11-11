@@ -64,8 +64,8 @@ termination without consuming another line. Empty input and short EOF are tested
 `tests/lifecycle.atto` has an explicit golden trace for take(0) (no reads),
 five reads for two selected items, independent subscriptions, transform/sink
 failure cleanup, and (pull) throwing cleanup followed by repeated cancel/read.
-Callback take(0) does not invoke its producer; pull opens and closes a Reader
-without reading. These differing acquisition semantics are intentional.
+Both models avoid upstream acquisition entirely for take(0): pull does not
+open a Reader and callbacks do not invoke their producer.
 
 Host tests use fake Java/Maven only for admission/security; they are labeled
 separately from real guest execution. Run receipts record actual commands,
