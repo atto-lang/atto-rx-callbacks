@@ -1,87 +1,70 @@
+import class Sink from '../support/sink.atto';
 // Executable guest-language Rx callback suite; requires canonical ores.std/testing.
-import * as rx_callbacks from '../src/rx.ores';
-import class Observable from '../src/rx.ores';
+import * as rx_callbacks from '../../src/rx.ores';
+import class Observable from '../../src/rx.ores';
 import class TestCase, TestSuite, TestOptions, TestOutcome, RunSummary from "ores.std/testing";
 import fnc expect_true, run_suite, require_success from "ores.std/testing";
 
 fnc callbacks_receive_values_in_order(): TestOutcome {
-  let int observed = 0;
+  val Sink probe = new Sink(0);
   val Observable<int> source = rx_callbacks.from_values([1, 2, 3]);
-  val Fnc<int, bool> observer = |value| -> {
-    observed = observed * 10 + value;
-    return true;
-  };
+  val Fnc<int, bool> observer = probe.accept;
   val int consumed = rx_callbacks.for_each(source, observer);
-  return expect_true(consumed == 3 && observed == 123,
+  return expect_true(consumed == 3 && probe.digits == 123,
     "callback order or upstream consumption changed");
 }
 
 fnc callback_false_stops_upstream_immediately(): TestOutcome {
-  let int received = 0;
+  val Sink probe = new Sink(2);
   val Observable<int> source = rx_callbacks.from_values([1, 2, 3, 4]);
-  val Fnc<int, bool> stop = |value| -> {
-    received = received + 1;
-    return value < 2;
-  };
-  val int consumed = rx_callbacks.for_each(source, stop);
-  return expect_true(consumed == 2 && received == 2,
+  val Fnc<int, bool> stop_sink = probe.accept;
+  val int consumed = rx_callbacks.for_each(source, stop_sink);
+  return expect_true(consumed == 2 && probe.count == 2,
     "callback cancellation consumed an extra value");
 }
 
 fnc filter_does_not_call_rejected_observer(): TestOutcome {
-  let int sum = 0;
+  val Sink probe = new Sink(0);
   val Observable<int> source = rx_callbacks.from_values([1, 2, 3, 4]);
   val Fnc<int, bool> even = |value| -> { return value - (value / 2) * 2 == 0; };
   val Observable<int> selected = rx_callbacks.filter(source, even);
-  val Fnc<int, bool> accumulate = |value| -> {
-    sum = sum + value;
-    return true;
-  };
+  val Fnc<int, bool> accumulate = probe.accept;
   val int consumed = rx_callbacks.for_each(selected, accumulate);
-  return expect_true(consumed == 4 && sum == 6,
+  return expect_true(consumed == 4 && probe.total == 6,
     "filter must consume four and emit only even values");
 }
 
 fnc map_propagates_transformed_callback_values(): TestOutcome {
-  let int total = 0;
+  val Sink probe = new Sink(0);
   val Observable<int> source = rx_callbacks.from_values([1, 2, 3]);
   val Fnc<int, int> twice = |value| -> { return value * 2; };
   val Observable<int> mapped = rx_callbacks.map(source, twice);
-  val Fnc<int, bool> accumulate = |value| -> {
-    total = total + value;
-    return true;
-  };
+  val Fnc<int, bool> accumulate = probe.accept;
   val int consumed = rx_callbacks.for_each(mapped, accumulate);
-  return expect_true(consumed == 3 && total == 12, "map callback mismatch");
+  return expect_true(consumed == 3 && probe.total == 12, "map callback mismatch");
 }
 
 fnc take_zero_never_calls_observer(): TestOutcome {
-  let int callbacks = 0;
+  val Sink probe = new Sink(0);
   val Observable<int> source = rx_callbacks.from_values([7, 8, 9]);
   val Observable<int> zero = rx_callbacks.take(source, 0);
-  val Fnc<int, bool> observer = |value| -> {
-    callbacks = callbacks + 1;
-    return value != 0;
-  };
+  val Fnc<int, bool> observer = probe.accept;
   val int consumed = rx_callbacks.for_each(zero, observer);
-  return expect_true(consumed == 0 && callbacks == 0,
+  return expect_true(consumed == 0 && probe.count == 0,
     "take(0) must not demand or call observer");
 }
 
 fnc take_two_stops_after_two_consumed(): TestOutcome {
-  let int total = 0;
+  val Sink probe = new Sink(0);
   val Observable<int> source = rx_callbacks.from_values([1, 2, 3, 4]);
   val Observable<int> two = rx_callbacks.take(source, 2);
-  val Fnc<int, bool> observer = |value| -> {
-    total = total + value;
-    return true;
-  };
+  val Fnc<int, bool> observer = probe.accept;
   val int consumed = rx_callbacks.for_each(two, observer);
-  return expect_true(consumed == 2 && total == 3,
+  return expect_true(consumed == 2 && probe.total == 3,
     "take(2) must not pull a third source element");
 }
 
-pub routine main(): void {
+pub fnc main(): void {
   val TestSuite suite = new TestSuite("rx-callbacks", arr[
     new TestCase("callbacks_receive_values_in_order", callbacks_receive_values_in_order, false, ""),
     new TestCase("callback_false_stops_upstream_immediately", callback_false_stops_upstream_immediately, false, ""),

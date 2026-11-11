@@ -1,3 +1,4 @@
+import class Sink from './support/sink.atto';
 import * as rx_callbacks from '../src/rx.ores';
 import class Observable from '../src/rx.ores';
 
@@ -20,20 +21,12 @@ pub fnc main(): void {
 
   stdio.println(rx_callbacks.for_each(limited, sink));
   // Callback-side assertions; no snapshot-only credit for take/filter.
-  let int one_count = 0;
-  val Fnc<int, bool> count_one = |value| -> {
-    one_count = one_count + 1;
-    return true;
-  };
-  rx_callbacks.for_each(rx_callbacks.take(rx_callbacks.from_values([6, 7, 8]), 1), count_one);
-  if one_count != 1 then panic("take(1) delivered wrong callback count"); fi
-  let int filtered_count = 0;
-  val Fnc<int, bool> count_filtered = |value| -> {
-    filtered_count = filtered_count + 1;
-    return true;
-  };
+  val Sink one = new Sink(0);
+  rx_callbacks.for_each(rx_callbacks.take(rx_callbacks.from_values([6, 7, 8]), 1), one.accept);
+  if one.count != 1; then Err("take(1) count").expect("rx assertion"); fi
+  val Sink none = new Sink(0);
   val Fnc<int, bool> none_match = |value| -> { return false; };
-  rx_callbacks.for_each(rx_callbacks.filter(rx_callbacks.from_values([1, 2]), none_match), count_filtered);
-  if filtered_count != 0 then panic("filter(false) delivered callbacks"); fi
+  rx_callbacks.for_each(rx_callbacks.filter(rx_callbacks.from_values([1, 2]), none_match), none.accept);
+  if none.count != 0; then Err("filter(false) count").expect("rx assertion"); fi
   return;
 }

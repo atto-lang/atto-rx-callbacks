@@ -1,0 +1,18 @@
+pub fnc produce(Fnc<int, bool> on_next): int {
+  stdio.println("open");
+  let int consumed = 0;
+  try {
+    for const value of [1, 2, 3, 4, 5, 6] do
+      consumed = consumed + 1;
+      stdio.println("read");
+      if !on_next(value); then return consumed; fi
+    done
+    return consumed;
+  } finally { stdio.println("close"); }
+}
+pub fnc twice(int value): int { return value * 2; }
+pub fnc large(int value): bool { return value > 4; }
+pub fnc emit(int value): bool { stdio.println(value); return true; }
+pub fnc stop_sink(int value): bool { stdio.println(value); return false; }
+pub fnc fail(int value): int { val Array<int> empty = []; return empty[1]; }
+pub fnc fail_sink(int value): bool { val Array<int> empty = []; return empty[1] == 1; }

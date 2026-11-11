@@ -8,7 +8,7 @@ pub fnc main(): void {
     stdio.println(value);
     return true;
   };
-  stdio.println(rx_callbacks.for_each(skipped, accept));
-  stdio.println(rx_callbacks.for_each(skipped, accept));
+  stdio.println(rx_callbacks.for_each(rt borrow skipped, accept));
+  stdio.println(rx_callbacks.for_each(rt borrow skipped, |value| -> { stdio.println(value); return true; }));
   return;
 }

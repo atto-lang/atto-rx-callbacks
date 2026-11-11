@@ -42,7 +42,7 @@ def checked_sources(root):
     if root.is_symlink() or (root.exists() and not root.is_dir()):
         sys.exit(f'source directory must be a real directory: {root}')
     parent = root.resolve(strict=True) if root.exists() else None
-    for path in sorted(root.glob('*.ores')):
+    for path in sorted([*root.glob('*.ores'), *root.glob('*.atto')]):
         if (path.is_symlink() or not path.is_file() or
                 path.resolve(strict=True).parent != parent):
             sys.exit(f'source must be an in-tree regular file: {path}')
@@ -53,6 +53,10 @@ def run(args):
     if result.returncode or ': error:' in result.stderr:
         sys.exit(result.stdout + result.stderr)
     return result.stdout.strip()
+
+assert_pointerless()
+if (ROOT / 'src/rx.atto').read_bytes() != (ROOT / 'src/rx.ores').read_bytes():
+    sys.exit('src/rx.ores must be the byte-identical compatibility copy of src/rx.atto')
 
 TESTS = validate_cases(ROOT / 'tests', ('.out', '.err'))
 REJECTS = validate_cases(ROOT / 'tests/reject', ('.err',))

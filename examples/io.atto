@@ -1,0 +1,14 @@
+pub fnc decorate(String value): String { return value + "!"; }
+pub fnc nonempty(String value): bool { return value != "!"; }
+pub fnc read_line(): Option<String> { return stdio.stdin.read_line(); }
+pub fnc close_input(): void { return; }
+pub fnc produce(Fnc<String, bool> on_next): int {
+  let int consumed = 0;
+  loop {
+    val Option<String> frame = stdio.stdin.read_line();
+    if frame.is_none(); then return consumed; fi
+    consumed = consumed + 1;
+    if !on_next(frame.unwrap()); then return consumed; fi
+  }
+}
+pub fnc emit(String value): bool { stdio.println(value); return true; }

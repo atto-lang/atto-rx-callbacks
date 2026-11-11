@@ -1,0 +1,20 @@
+import fnc produce, twice, large, emit, stop_sink, fail, fail_sink from './support/producer.atto';
+import * as rx from '../src/rx.atto';
+import class Observable from '../src/rx.atto';
+pub fnc main(): void {
+  stdio.println("zero");
+  stdio.println(rx.for_each(rx.take(rx.from_producer(produce), 0), emit));
+  stdio.println("pipeline");
+  val Observable<int> pipeline = rx.take(rx.skip(rx.filter(rx.map(rx.from_producer(produce), twice), large), 1), 2);
+  stdio.println(rx.for_each(pipeline, emit));
+  stdio.println("independent");
+  val Observable<int> cold = rx.skip(rx.from_producer(produce), 1);
+  stdio.println(rx.for_each(rt borrow cold, stop_sink));
+  stdio.println(rx.for_each(rt borrow cold, stop_sink));
+  stdio.println("exception");
+  val Observable<int> failing = rx.map(rx.from_producer(produce), fail);
+  try { rx.for_each(failing, emit); } catch (err) { stdio.println("caught"); }
+  stdio.println("sink exception");
+  try { rx.for_each(rx.from_producer(produce), fail_sink); } catch (err) { stdio.println("caught sink"); }
+  return;
+}
