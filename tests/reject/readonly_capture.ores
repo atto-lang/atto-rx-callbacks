@@ -1,0 +1,11 @@
+import * as rx_callbacks from '../../src/rx.ores';
+
+pub fnc main(): void {
+  const record = infer struct{inside: infer struct{value: 1}};
+  val Fnc<int, bool> sink = |value| -> {
+    record.inside.value = value;
+    return true;
+  };
+  rx_callbacks.for_each(rx_callbacks.from_values([1]), sink);
+  return;
+}

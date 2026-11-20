@@ -1,0 +1,11 @@
+import * as rx_callbacks from '../src/rx.ores';
+
+pub fnc main(): void {
+  let int remaining = 2;
+  val Fnc<int, bool> sink = |value| -> {
+    remaining = remaining - 1;
+    return remaining > 0;
+  };
+  stdio.println(rx_callbacks.for_each(rx_callbacks.from_values([1, 2, 3]), sink));
+  return;
+}
