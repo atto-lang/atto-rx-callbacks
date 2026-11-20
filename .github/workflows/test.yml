@@ -1,0 +1,33 @@
+name: Callback RX contracts
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Read compiler pin
+        id: compiler
+        run: echo "revision=$(cat compiler.lock)" >> "$GITHUB_OUTPUT"
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: compiler-mirror/${{ steps.compiler.outputs.revision }}
+          path: .work/oreslang-source.java
+          persist-credentials: false
+      - name: Install matching GraalVM 25.3.4.1
+        run: |
+          archive="$RUNNER_TEMP/graalvm.tar.gz"
+          curl --fail --location --retry 3 https://github.com/graalvm/graalvm-ce-builds/releases/download/graal-25.3.4.1/graalvm-community-jdk-25i3-25.0.4.1_linux-x64_bin.tar.gz -o "$archive"
+          echo "b2bc38d0c4141426eb44d0eefa3cc172c96faf92727d703b61541699128b6fc7  $archive" | sha256sum --check
+          mkdir -p "$RUNNER_TEMP/graalvm"
+          tar -xzf "$archive" -C "$RUNNER_TEMP/graalvm" --strip-components=1
+          echo "JAVA_HOME=$RUNNER_TEMP/graalvm" >> "$GITHUB_ENV"
+          echo "$RUNNER_TEMP/graalvm/bin" >> "$GITHUB_PATH"
+      - name: Verify and build exact compiler snapshot
+        run: python3 scripts/setup.py
+      - name: Run positive and negative ownership contracts
+        run: source .work/env.sh && python3 scripts/test.py
