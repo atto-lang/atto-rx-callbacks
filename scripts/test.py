@@ -28,13 +28,25 @@ POINTER_STYLE = (
 def assert_pointerless():
     roots = [ROOT / 'src', ROOT / 'tests', ROOT / 'bench']
     for root in roots:
-        for path in sorted(root.glob('*.ores')):
+        for path in checked_sources(root):
             text = path.read_text()
             for pattern, label in POINTER_STYLE:
                 match = pattern.search(text)
                 if match:
                     line = text.count('\n', 0, match.start()) + 1
                     sys.exit(f'{path}:{line}: forbidden {label}; use pointerless rt ownership semantics')
+
+def checked_sources(root):
+    # Validate all executable and regex-scanned .ores paths before opening them.
+    # Purely source-local preflight; this does not make a writable tree TOCTOU-safe.
+    if root.is_symlink() or (root.exists() and not root.is_dir()):
+        sys.exit(f'source directory must be a real directory: {root}')
+    parent = root.resolve(strict=True) if root.exists() else None
+    for path in sorted(root.glob('*.ores')):
+        if (path.is_symlink() or not path.is_file() or
+                path.resolve(strict=True).parent != parent):
+            sys.exit(f'source must be an in-tree regular file: {path}')
+        yield path
 
 def run(args):
     result = subprocess.run(COMMAND + args, text=True, capture_output=True, timeout=30)
