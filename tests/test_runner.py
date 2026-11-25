@@ -22,6 +22,7 @@ class RunnerInventory(unittest.TestCase):
             shutil.copy(source/name,self.root/'scripts'/name)
         (self.root/'src').mkdir()
         (self.root/'src/rx.ores').write_text('fixture')
+        (self.root/'src/rx.atto').write_text('fixture')
         (self.root/'tests').mkdir()
         self.marker = self.root/'java-called'
         java = self.root/'java'

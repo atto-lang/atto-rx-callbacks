@@ -25,6 +25,19 @@ class FixtureInventoryHardeningTest(unittest.TestCase):
     def test_positive_fixture_admitted(self):
         self.assertEqual([p.name for p in self.check()], ['case.ores'])
 
+    def test_atto_fixture_admitted_and_legacy_collision_rejected(self):
+        (self.folder / 'case.ores').rename(self.folder / 'case.atto')
+        self.assertEqual([p.name for p in self.check()], ['case.atto'])
+        (self.folder / 'case.ores').write_text('duplicate')
+        with self.assertRaisesRegex(RuntimeError, 'duplicate fixture stem'):
+            self.check()
+
+    def test_atto_symlink_rejected(self):
+        (self.folder / 'case.ores').rename(self.folder / 'outside')
+        (self.folder / 'case.atto').symlink_to(self.folder / 'outside')
+        with self.assertRaisesRegex(RuntimeError, 'regular file'):
+            self.check()
+
     def test_check_error_expectation_admitted(self):
         (self.folder / 'case.out').unlink()
         (self.folder / 'case.check.err').write_text('compiler rejection\n')

@@ -1,0 +1,4 @@
+pub define class Sink as
+  pub let int total = 0;
+  pub accept(mut self)(int value): bool { self.total = self.total + value; return true; }
+end

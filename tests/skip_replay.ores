@@ -1,0 +1,14 @@
+import * as rx_callbacks from '../src/rx.ores';
+import class Observable from '../src/rx.ores';
+
+pub fnc main(): void {
+  val Observable<int> source = rx_callbacks.from_values([1, 2, 3]);
+  val Observable<int> skipped = rx_callbacks.skip(source, 1);
+  val Fnc<int, bool> accept = |value| -> {
+    stdio.println(value);
+    return true;
+  };
+  stdio.println(rx_callbacks.for_each(rt borrow skipped, accept));
+  stdio.println(rx_callbacks.for_each(rt borrow skipped, |value| -> { stdio.println(value); return true; }));
+  return;
+}

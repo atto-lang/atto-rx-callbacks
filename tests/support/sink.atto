@@ -1,0 +1,14 @@
+// Synchronous guest observer; no captured mutable local escapes its owner.
+pub define class Sink as
+  pub let int count = 0;
+  pub let int total = 0;
+  pub let int digits = 0;
+  val int limit;
+  pub constructor(int limit) { self.limit = limit; }
+  pub accept(mut self)(int value): bool {
+    self.count = self.count + 1;
+    self.total = self.total + value;
+    self.digits = self.digits * 10 + value;
+    return self.limit == 0 || self.count < self.limit;
+  }
+end

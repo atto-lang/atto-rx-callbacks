@@ -1,0 +1,18 @@
+import * as rx_callbacks from '../src/rx.ores';
+import class Observable from '../src/rx.ores';
+
+pub fnc main(): void {
+  val Observable<int> source = rx_callbacks.from_values([1, 2, 3, 4, 5, 6]);
+  val Fnc<int, int> twice = |value| -> { return value * 2; };
+  val Observable<int> doubled = rx_callbacks.map(source, twice);
+  val Fnc<int, bool> large = |value| -> { return value > 4; };
+  val Observable<int> filtered = rx_callbacks.filter(doubled, large);
+  val Observable<int> skipped = rx_callbacks.skip(filtered, 1);
+  val Observable<int> limited = rx_callbacks.take(skipped, 2);
+  val Fnc<int, bool> accept = |value| -> { return value == 8 || value == 10; };
+  // The callback contract reports five *upstream consumed* values, not two emissions.
+  stdio.println(rx_callbacks.for_each(limited, accept));
+  val Observable<int> none = rx_callbacks.take(rx_callbacks.skip(rx_callbacks.from_values([1, 2]), 1), 0);
+  stdio.println(rx_callbacks.for_each(none, |value| -> { return true; }));
+  return;
+}

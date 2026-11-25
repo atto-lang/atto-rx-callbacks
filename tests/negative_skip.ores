@@ -1,0 +1,8 @@
+import * as rx_callbacks from '../src/rx.ores';
+import class Observable from '../src/rx.ores';
+
+pub fnc main(): void {
+  val Observable<int> source = rx_callbacks.from_values([1]);
+  val Observable<int> skipped = rx_callbacks.skip(source, -1);
+  return;
+}

@@ -14,7 +14,9 @@ def validate_cases(directory, suffixes):
         if path.is_symlink() or not path.is_file() or path.resolve(strict=True).parent != root:
             raise RuntimeError(f'fixture must be an in-tree regular file: {path}')
 
-    cases = sorted(directory.glob('*.ores'))
+    cases = sorted([*directory.glob('*.ores'), *directory.glob('*.atto')])
+    if len({case.stem for case in cases}) != len(cases):
+        raise RuntimeError(f'duplicate fixture stem: {directory}')
     if not cases:
         raise RuntimeError(f'test inventory must not be empty: {directory}')
     for case in cases:
@@ -34,6 +36,6 @@ def validate_cases(directory, suffixes):
                 continue
             seen.add(expected)
             require_regular(expected)
-            if expected.name[:-len(suffix)] + '.ores' not in admitted:
+            if not any(expected.name[:-len(suffix)] + ext in admitted for ext in ('.atto', '.ores')):
                 raise RuntimeError(f'orphan expected result: {expected}')
     return cases

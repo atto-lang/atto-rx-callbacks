@@ -1,0 +1,24 @@
+import * as rx from '../src/rx.atto';
+import class Observable from '../src/rx.atto';
+import class Sink from './sink.atto';
+fnc pipeline_checksum(): int {
+  val Observable<int> source = rx.from_values([1, 2, 3, 4, 5, 6, 7, 8]);
+  val Fnc<int, int> twice = |v| -> { return v * 2; };
+  val Observable<int> mapped = rx.map(source, twice);
+  val Fnc<int, bool> large = |v| -> { return v > 4; };
+  val Observable<int> filtered = rx.filter(mapped, large);
+  val Observable<int> skipped = rx.skip(filtered, 1);
+  val Observable<int> limited = rx.take(skipped, 2);
+  val Sink sink = new Sink();
+  val int consumed = rx.for_each(limited, sink.accept);
+  if consumed != 5; then Err("excess consumption").expect("benchmark"); fi
+  return sink.total;
+}
+pub fnc main(): void {
+  let int checksum = 0;
+  for let i = 0; i < 200; i++ do
+    checksum = checksum + pipeline_checksum();
+  done
+  stdio.println(checksum);
+  return;
+}

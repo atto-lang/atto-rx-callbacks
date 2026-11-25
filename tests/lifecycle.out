@@ -1,0 +1,36 @@
+zero
+0
+pipeline
+open
+read
+read
+read
+read
+8
+read
+10
+close
+5
+independent
+open
+read
+read
+2
+close
+2
+open
+read
+read
+2
+close
+2
+exception
+open
+read
+close
+caught
+sink exception
+open
+read
+close
+caught sink

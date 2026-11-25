@@ -54,7 +54,7 @@ define class MapObservable<A, B> extends Observable<B> as
   }
 
   pub subscribe(Fnc<B, bool> on_next): int {
-    val Fnc<A, B> transform = self.transform;
+    const Fnc<A, B> transform = self.transform;
     val Fnc<A, bool> forward = |value| -> {
       val B mapped = transform(value);
       return on_next(mapped);
@@ -73,7 +73,7 @@ define class FilterObservable<T> extends Observable<T> as
   }
 
   pub subscribe(Fnc<T, bool> on_next): int {
-    val Fnc<T, bool> predicate = self.predicate;
+    const Fnc<T, bool> predicate = self.predicate;
     val Fnc<T, bool> forward = |value| -> {
       if !predicate(value); then
         return true;
@@ -102,7 +102,7 @@ define class TakeObservable<T> extends Observable<T> as
       return 0;
     fi
 
-    let int remaining = self.count;
+    let int remaining = rt copy self.count;
     val Fnc<T, bool> forward = |value| -> {
       if remaining == 0; then
         return false;
@@ -129,6 +129,50 @@ pub fnc take<T>(Observable<T> source, int count): Observable<T> {
   return new TakeObservable<T>(source, count);
 }
 
-pub fnc for_each<T>(Observable<T> source, Fnc<T, bool> on_next): int {
+pub fnc for_each<T>(borrow Observable<T> source, Fnc<T, bool> on_next): int {
   return source.subscribe(on_next);
+}
+
+
+// Skip is callback composition: dropped items do not reach the downstream sink.
+define class SkipObservable<T> extends Observable<T> as
+  val Observable<T> source;
+  val int count;
+
+  constructor(Observable<T> source, int count) {
+    if count < 0; then
+      val Result<bool, String> failure = Err("skip count must be nonnegative");
+      failure.expect("rx_callbacks.skip");
+    fi
+    self.source = source;
+    self.count = count;
+  }
+
+  pub subscribe(Fnc<T, bool> on_next): int {
+    let int remaining = rt copy self.count;
+    val Fnc<T, bool> forward = |value| -> {
+      if remaining > 0; then
+        remaining = remaining - 1;
+        return true;
+      fi
+      return on_next(value);
+    };
+    return self.source.subscribe(forward);
+  }
+end
+
+pub fnc skip<T>(Observable<T> source, int count): Observable<T> {
+  return new SkipObservable<T>(source, count);
+}
+
+// A synchronous producer owns its resource lifetime, including try/finally.
+// Calling it again creates a new independent activation; no async engine.
+define class ProducerObservable<T> extends Observable<T> as
+  val Fnc<Fnc<T, bool>, int> produce;
+  constructor(Fnc<Fnc<T, bool>, int> produce) { self.produce = produce; }
+  pub subscribe(Fnc<T, bool> on_next): int { return self.produce(on_next); }
+end
+
+pub fnc from_producer<T>(Fnc<Fnc<T, bool>, int> produce): Observable<T> {
+  return new ProducerObservable<T>(produce);
 }
