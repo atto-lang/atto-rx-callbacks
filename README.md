@@ -1,76 +1,51 @@
-# rx-ores-callbacks
+> **AI agent instructions (organization-wide):** Before working on code, issues, or pull requests, read and follow the [organization `AGENTS.md`](https://github.com/atto-lang/.github/blob/main/AGENTS.md), including its **merge-first stealth-development policy**. Honor any repository-local `AGENTS.md`, explicit holds, and GitHub-enforced rules.
 
-Standalone callback-only reactive library for Oreslang.
+# atto-rx-callbacks
 
-This variant deliberately uses synchronous callbacks rather than channels,
-Future/await, or a pull subscription. It stays separate from `rx-ores` and `rx-oreslang-channels` so
-the execution models can be tested and benchmarked independently.
+Callback interoperability and reactive event abstractions for AttoLang.
 
-## Source model
+## Naming migration and language authority
 
-`src/rx.ores` is a file/code unit, not an implicit module. Namespace it at the
-import site:
+This repository is maintained at [atto-lang/atto-rx-callbacks](https://github.com/atto-lang/atto-rx-callbacks); use `https://github.com/atto-lang/atto-rx-callbacks.git` for Git remotes and canonical `.atto` source examples. The normative language contract is [atto-spec](https://github.com/atto-lang/atto-spec), with executable guest evidence tracked by [atto-platform-conformance](https://github.com/atto-lang/atto-platform-conformance). Follow current ownership, borrowing, effects, actor, and syntax rules there; do not infer implemented features from a README or unexecuted CI.
 
-```ores
-import * as rx_callbacks from './src/rx.ores';
-import class Observable from './src/rx.ores';
-```
+## Purpose
 
-## Callback contract
+Callback/event bridges and explicit ownership/lifetime rules.
 
-`subscribe(on_next)` pushes values synchronously. `on_next` returns `true`
-to continue and `false` to stop upstream immediately. That boolean is the
-callback variant's backpressure/cancellation signal, so this implementation
-does not need a channel, Future, scheduler hop, or pull Subscription.
+## API and contract expectations
 
-Operators are callback composition: `map`, `filter`, `take`, and
-`for_each`. Oreslang does not encode borrowing with pointer-like function
-types: callbacks use ordinary types such as `Fnc<A, B>` and
-`Fnc<T, bool>`. Calling such a callback gives it temporary read access under
-the ownership checker without changing the source type. If code needs a named
-borrow that lives beyond one call expression, it uses `rt borrow value`.
-Independent copying and read-only shared ownership use `rt copy` and
-`rt share`.
+- Expose general-purpose interfaces that are usable without an Atto commercial account.
+- Document data/ownership semantics, error behavior, and supported runtimes.
+- Keep protocol and serialization details portable across relevant AttoLang backends.
 
-This variant intentionally stops at the callback boundary: no `Future<T>`,
-`await`, Channel-backed transport, or pull subscription is part of `src/rx.ores`.
-Async/Future composition belongs in the separate pull/Future `rx-ores` variant
-while we measure the callback data path independently.
+## Development and testing
 
-## Validation and benchmark
+Use checked-in implementation and CI for actual commands. Add behavior-focused tests, including negative cases and lifecycle edge cases; distinguish local unit tests from executed multi-backend conformance.
 
-Run the pinned compiler tests with:
+## Project status
 
-```sh
-python3 scripts/setup.py
-source .work/env.sh
-python3 scripts/test.py
-```
+This describes intended scope, not a verified feature matrix. Consult the source tree and exact-commit CI results for implementation status.
 
-`bench/pipeline.ores` implements the same repeated logical pipeline used by
-the central harness in `rx-ores/bench/benchmark.py`.
+## Ecosystem
 
+- [AttoLang](https://github.com/atto-lang)
+- [Language specification](https://github.com/atto-lang/atto-spec)
+- [Cross-platform conformance](https://github.com/atto-lang/atto-platform-conformance)
 
-## Compiler compatibility
+## Repository ownership and contribution routing
 
-This pointerless callback surface requires the current-main ownership convergence
-that makes first-class `Fnc<T,...>` calls temporarily read-borrow non-Copy
-arguments and provides compiler-owned `rt borrow/take/copy/share`. The pinned
-compiler revision is the exact head validated by the funded exact-tree carrier.
+**Belongs here:** Host callback interop adapters, listener registration/unregistration and explicit callback ownership/lifetime rules.
 
-## Compiler compatibility checkpoint (2026-10-06)
+**Belongs elsewhere:** Core stream operators in atto-rx, channels in atto-rx-channels and async task composition in atto-rx-tasks.
 
-The compiler convergence and actor proofs are merged. `compiler.lock` and `compiler-tree.txt` pin the validated implementation. `Observable` is explicitly public for named imports; implementation classes stay private. Tests execute operator composition and owned mutable captures, and require rejection of nested readonly capture mutation.
+**Security and portability boundary:** Never smuggle lexical closures through serializable actor messages; make unsubscribe and late callback behavior race-safe with generation tokens.
 
-CI checks out a source-only `compiler-mirror/<revision>` branch in this private repository. Setup verifies its tree identity and clean source state before building; no cross-repository token is required. The historical proposal inventory remains in [docs/compiler-pr-sync.md](docs/compiler-pr-sync.md).
+AttoLang is the canonical project name; new source, examples and documentation use `.atto` and the `atto-lang` repository organization. This README defines scope, not feature readiness.
 
-## Repository ownership and migration (2026-11-08)
+**Acceptance:** name exact source SHA/tree, runtime/toolchain, positive and negative checks and execution receipt before claiming support. Host-only tests and empty CI steps do not prove guest execution.
 
-**AttoLang** is the public language, formerly Oreslang. The repository remains `ores-truffle-oreslang/rx-ores-callbacks` in the legacy org until approved cutover. Preserve supported `.ores` sources, old import paths and package/CLI names; don't infer backend completeness from a README.
+## Legacy migration provenance and gates
 
-- **Belongs here:** safe reactive callback bridges and explicit ownership tests.
-- **Excluded:** passing lexical closures through isolated actor channels.
-- **Organization split:** [atto-lang](https://github.com/atto-lang) owns portable core/std, compilers, language libraries, test harnesses and demos; [atto-co](https://github.com/atto-co) independently owns cloud hosting, deployment, identity, billing and managed services. Existing `atto-*` repos are not automatically migrated copies or equivalent codebases.
-- **Proposed first transfer (not executed):** retain original name, repo ID and Git history in `atto-lang/rx-ores-callbacks` via approved GitHub ownership transfer. No direct source-org → `atto-co` moves are authorized currently; future product carve-outs need separate signoffs.
+The original `ores-truffle-oreslang/rx-ores-callbacks` repository is archived; this AttoLang repository has a separate numeric GitHub identity. Historical `.ores` files, imports, package names and CLI identifiers are compatibility history, not evidence of current `.atto` execution. Safe reactive callback bridges and explicit ownership tests belong here; lexical closures must not cross isolated actor channels.
 
-**Maintainer safety procedure:** coordinate exact source head, owners and rollback in [issue #26](https://github.com/ores-truffle-oreslang/.github/issues/26), then follow private [runbook draft #25](https://github.com/ores-truffle-oreslang/.github/pull/25). Obtain source/target admin and independent security approval; inventory exact SHA/tree, numeric ID, target branch protections/rulesets, access, open PRs, releases/tags, packages, consumers, Actions/runners, secrets, GitHub Apps, webhooks and Pages. Don't clone/mirror private code as transfer workaround. After transfer verify ID/tree/history/controls, update links and rerun exact-head CI; **`steps=[]`/`null` is `NOT_EXECUTED`**, and host-only/source-free checks are not native guest/compiler evidence.
+[atto-lang](https://github.com/atto-lang) owns language libraries, compilers, tooling, tests and examples; [atto-co](https://github.com/atto-co) owns hosted deployment, tenant infrastructure, identity and billing. A future original-ID transfer or product carve-out requires separate source/target owner and independent security approval. Inventory exact SHA/tree, numeric ID, visibility, permissions, protections, PRs, releases, packages, dependencies, runners, secrets, applications, webhooks, Pages and rollback owner; verify preservation and rerun exact-head tests after an actual transfer. Never mirror private source without authorization. Zero-step jobs are NOT_EXECUTED; host-only checks do not establish native guest/compiler execution.
