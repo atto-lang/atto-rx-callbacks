@@ -42,7 +42,7 @@ def checked_sources(root):
     if root.is_symlink() or (root.exists() and not root.is_dir()):
         sys.exit(f'source directory must be a real directory: {root}')
     parent = root.resolve(strict=True) if root.exists() else None
-    for path in sorted(root.glob('*.ores')):
+    for path in sorted([*root.glob('*.ores'), *root.glob('*.atto')]):
         if (path.is_symlink() or not path.is_file() or
                 path.resolve(strict=True).parent != parent):
             sys.exit(f'source must be an in-tree regular file: {path}')
@@ -54,10 +54,23 @@ def run(args):
         sys.exit(result.stdout + result.stderr)
     return result.stdout.strip()
 
-TESTS = validate_cases(ROOT / 'tests', ('.out',))
+TESTS = validate_cases(ROOT / 'tests', ('.out', '.err'))
 REJECTS = validate_cases(ROOT / 'tests/reject', ('.err',))
 assert_pointerless()
+if (ROOT / 'src/rx.atto').read_bytes() != (ROOT / 'src/rx.ores').read_bytes():
+    sys.exit('src/rx.ores must be the byte-identical compatibility copy of src/rx.atto')
+
 for path in TESTS:
+    failure_file = path.with_suffix('.err')
+    if failure_file.is_file():
+        failed = subprocess.run(COMMAND + [str(path)], text=True,
+                                capture_output=True, timeout=30)
+        expected_error = failure_file.read_text().strip()
+        diagnostic = failed.stderr + failed.stdout
+        if failed.returncode == 0 or expected_error not in diagnostic:
+            sys.exit(f'{path.name}: expected runtime failure containing {expected_error!r}\\n{diagnostic}')
+        print(f'PASS {path.stem} (expected runtime failure)')
+        continue
     actual = run([str(path)])
     expected = path.with_suffix('.out').read_text().strip()
     if actual != expected:

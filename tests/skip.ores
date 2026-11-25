@@ -1,0 +1,17 @@
+import * as rx_callbacks from '../src/rx.ores';
+import class Observable from '../src/rx.ores';
+
+pub fnc main(): void {
+  val Observable<int> source = rx_callbacks.from_values([1, 2, 3, 4, 5]);
+  val Observable<int> skipped = rx_callbacks.skip(source, 2);
+  val Observable<int> limited = rx_callbacks.take(skipped, 2);
+  val Fnc<int, bool> accept = |value| -> { return value == 3 || value == 4; };
+  // Counts upstream consumption (1, 2, 3, 4), not downstream emission.
+  stdio.println(rx_callbacks.for_each(limited, accept));
+  val Observable<int> empty = rx_callbacks.skip(rx_callbacks.from_values([1, 2]), 10);
+  stdio.println(rx_callbacks.for_each(empty, |value| -> { return true; }));
+  val Observable<int> zero = rx_callbacks.skip(rx_callbacks.from_values([7, 8]), 0);
+  val Fnc<int, bool> stop_sink = |value| -> { return value != 7; };
+  stdio.println(rx_callbacks.for_each(zero, stop_sink));
+  return;
+}

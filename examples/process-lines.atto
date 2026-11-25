@@ -1,0 +1,9 @@
+import fnc decorate, nonempty, produce, emit from './io.atto';
+import * as rx from '../src/rx.atto';
+import class Observable from '../src/rx.atto';
+pub fnc main(): void {
+  val Observable<String> source = rx.from_producer(produce);
+  val Observable<String> selected = rx.take(rx.skip(rx.filter(rx.map(source, decorate), nonempty), 1), 2);
+  rx.for_each(selected, emit);
+  return;
+}
